@@ -140,7 +140,7 @@ while ($reader->nextElement("A2A", "http://Mindbus.nl/A2A")) {
             $fam{$rol} = $p;
         }
         if( not(length($p->{PersonName}->{PersonNameLastName}->{value})) 
-				    and not(length($p->{PersonName}->{PersonNamePatronym}->{value})) ) {
+                and not(length($p->{PersonName}->{PersonNamePatronym}->{value})) ) {
             # REGEL 7: achternaam en patroniem mogen niet allebei leeg zijn
             # 
             &logErr('BS_G',"NAAMDEEL_LEEG",'PatroniemOfAchternaam', "", 
@@ -185,32 +185,33 @@ while ($reader->nextElement("A2A", "http://Mindbus.nl/A2A")) {
             }
         }
         if( my $fn = $p->{PersonName}->{PersonNameFirstName}->{value} ) {
-			    if( my $gr = $p->{Gender}->{value} ) {
-				    if( $gr eq "Man" or $gr eq "Vrouw" ) {
-					    my @temp = split / +/, $fn;
-					    my $bla1 = substr($temp[0], -2)||"";
-					    my $bla2 = substr($temp[0], -1)||"";
-					    my $bla3 = substr($temp[0], -3)||"";
-					    if( ($bla1 =~ /(us|rt|rd|an|ik|of|as|ob|em|es|nd|zo)/  or $bla2 eq 'o') and $p->{Gender}->{value} eq "Vrouw" and !grep { $temp[0] eq $_ } @{$alg->{vrouwen}}) {
-						# REGEL 13: verdacht als de naam van een vrouw op een mannelijke uitgang eindigt
-						&logErr('BS_G',"GESLACHT_FOUT", "PersonNameFirstName", $temp[0],
-						"Op basis van de naam zou dit een man kunnen zijn ipv een vrouw", $a2a, "PERSOON: ".&maakNaam($p)." (".$rol.")");
-					    } elsif( ($bla2 eq 'a' or $bla3 =~ /([bdfgknps]je|.th)/) and $p->{Gender}->{value} eq "Man" and !grep { $temp[0] eq $_ } @{$alg->{mannen}}) {
-					       # REGEL 14a:  verdacht als de naam van een man op een vrouwelijke uitgang eindigt
-						&logErr('BS_G',"GESLACHT_FOUT", "PersonNameFirstName", $temp[0],
-						"Op basis van de naam zou dit een vrouw kunnen zijn ipv een man", $a2a, "PERSOON: ".&maakNaam($p)." (".$rol.")");
-					    } elsif( ($bla3 =~ /(ien|[wnfb]ke)/ and !grep { $temp[0] eq $_} @{$alg->{mannen}} ) and $p->{Gender}->{value} eq "Man" ) {
-						# REGEL 14b:  verdacht als de naam van een man op een vrouwelijke uitgang eindigt
-						&logErr('BS_G',"GESLACHT_FOUT", "PersonNameFirstName", $temp[0],
-						"Op basis van de naam zou dit een vrouw kunnen zijn ipv een man", $a2a, "PERSOON: ".&maakNaam($p)." (".$rol.")");
-					    }
-				    } else {
-					    # REGEL 14c: een geslacht moet Man of Vrouw zijn
-						    &logErr('BS_G',"GESLACHT_FOUT", "Gender", $gr,
-						    "Geslacht moet Man of Vrouw zijn", $a2a, "PERSOON: ".&maakNaam($p)." (".$rol.")");
-				    }
-			    }
-		    }
+             if( my $gr = $p->{Gender}->{value} ) {
+                if( $gr eq "Man" or $gr eq "Vrouw" ) {
+                   my @temp = split / +/, $fn;
+                   my $bla1 = substr($temp[0], -2)||"";
+                   my $bla2 = substr($temp[0], -1)||"";
+                   my $bla3 = substr($temp[0], -3)||"";
+                   if( ($bla1 =~ /(us|rt|rd|an|ik|of|as|ob|em|es|nd|zo)/  or $bla2 eq 'o') and $p->{Gender}->{value} eq "Vrouw" and !grep { $temp[0] eq $_ } @{$alg->{vrouwen}}) {
+                  # REGEL 13: verdacht als de naam van een vrouw op een mannelijke uitgang eindigt
+                  &logErr('BS_G',"GESLACHT_FOUT", "PersonNameFirstName", $temp[0],
+                  "Op basis van de naam zou dit een man kunnen zijn ipv een vrouw", $a2a, "PERSOON: ".&maakNaam($p)." (".$rol.")");
+                   } elsif( ($bla2 eq 'a' or $bla3 =~ /([bdfgknps]je|.th)/) and $p->{Gender}->{value} eq "Man" and !grep { $temp[0] eq $_ } @{$alg->{mannen}}) {
+                      # REGEL 14a:  verdacht als de naam van een man op een vrouwelijke uitgang eindigt
+                  &logErr('BS_G',"GESLACHT_FOUT", "PersonNameFirstName", $temp[0],
+                  "Op basis van de naam zou dit een vrouw kunnen zijn ipv een man", $a2a, "PERSOON: ".&maakNaam($p)." (".$rol.")");
+                   } elsif( ($bla3 =~ /(ien|[wnfb]ke)/ and !grep { $temp[0] eq $_} @{$alg->{mannen}} ) and $p->{Gender}->{value} eq "Man" ) {
+                  # REGEL 14b:  verdacht als de naam van een man op een vrouwelijke uitgang eindigt
+                  &logErr('BS_G',"GESLACHT_FOUT", "PersonNameFirstName", $temp[0],
+                  "Op basis van de naam zou dit een vrouw kunnen zijn ipv een man", $a2a, "PERSOON: ".&maakNaam($p)." (".$rol.")");
+                   }
+                } else {
+                   # REGEL 14c: een geslacht moet Man of Vrouw zijn
+                   #   &logErr('BS_G',"GESLACHT_FOUT", "Gender", $gr,
+                   #   "Geslacht moet Man of Vrouw zijn", $a2a, "PERSOON: ".&maakNaam($p)." (".$rol.")");
+                   #  REGEL uitgeschakeld ivm teveel vermeldingen
+                }
+             }
+        }
         if( $p->{PersonName}->{PersonNamePrefixLastName}->{value} ) {
             unless( $p->{PersonName}->{PersonNamePrefixLastName}->{value} =~ $re_tv ) {
             #unless( $p->{PersonName}->{PersonNamePrefixLastName}->{value} =~ /^([a-z\']+ ?)*$/ ) {
