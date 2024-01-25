@@ -47,3 +47,11 @@ do
   perl bsg.pl $x $log
 done
 ```
+## Verwerking resultaten
+Het resultaat van een run van het script is een logfile die middels Excel kan worden omgezet in een spreadsheet, alwaar de (mogelijke) fouten geanalyseerd kunnen worden. Het is van belang om daarbij te realiseren dat het script in meerdere gevallen 'false positives' genereert. Er wordt alleen een vermoeden uitgesproken van een fout. Controles worden uitgevoerd op:
+- structuur aktenummer
+- structuur van algemen en specifieke naamdelen (voornaam, patroniem, tussenvoegsel, achternaam)
+- tekencombinaties in naamdelen
+- overeenkomsten tussen naam kind en naam ouder (moeder in geval geen vader bekend)
+- geslacht (op basis van naam)
+- gebruikte rollen
