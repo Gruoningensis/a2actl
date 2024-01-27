@@ -47,6 +47,13 @@ do
   perl bsg.pl $x $log
 done
 ```
+## Parameters
+Het script kent een aanvullende parameter "vanaf" waarmee het startjaar bepaald kan worden voor de controles. Dit komt van pas wanneer de A2A-bestanden in zijn geheel per aktesoort gepubliceerd worden en de controles alleen op de laatst toegevoegde jaren moet worden uitgevoerd, bijvoorbeeld naar aanleiding van openbaarheidsdag:
+```
+perl bsg.pl --vanaf 1922 <pad naar A2A-bestand> <pad naar logbestand>
+```
+De verwerking van een bestand wordt hierdoor niet sneller, alle records moeten immers gecontroleerd worden op jaartal. Het scheelt met name in de omvang van de output.
+Let op dat het script hierbij alleen records verwerkt waarvan een SourceDate/Year bekend is.
 ## Verwerking resultaten
 Het resultaat van een run van het script is een logfile die middels Excel kan worden omgezet in een spreadsheet, alwaar de (mogelijke) fouten geanalyseerd kunnen worden. Het is van belang om daarbij te realiseren dat het script in meerdere gevallen 'false positives' genereert. Er wordt alleen een vermoeden uitgesproken van een fout. Controles worden uitgevoerd op:
 - structuur aktenummer
