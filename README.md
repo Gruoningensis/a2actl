@@ -48,7 +48,7 @@ do
 done
 ```
 ## Parameters
-Het script kent een aanvullende parameter "vanaf" waarmee het startjaar bepaald kan worden voor de controles. Dit komt van pas wanneer de A2A-bestanden in zijn geheel per aktesoort gepubliceerd worden en de controles alleen op de laatst toegevoegde jaren moet worden uitgevoerd, bijvoorbeeld naar aanleiding van openbaarheidsdag:
+Het script kent de aanvullende parameter "vanaf" waarmee het startjaar bepaald kan worden voor de controles. Dit komt van pas wanneer de A2A-bestanden in zijn geheel per aktesoort gepubliceerd worden en de controles alleen op de laatst toegevoegde jaren moet worden uitgevoerd, bijvoorbeeld naar aanleiding van openbaarheidsdag:
 ```
 perl bsg.pl --vanaf 1922 <pad naar A2A-bestand> <pad naar logbestand>
 ```
@@ -57,8 +57,10 @@ Let op dat het script hierbij alleen records verwerkt waarvan een SourceDate/Yea
 ## Verwerking resultaten
 Het resultaat van een run van het script is een logfile die middels Excel kan worden omgezet in een spreadsheet, alwaar de (mogelijke) fouten geanalyseerd kunnen worden. Het is van belang om daarbij te realiseren dat het script in meerdere gevallen 'false positives' genereert. Er wordt alleen een vermoeden uitgesproken van een fout. Controles worden uitgevoerd op:
 - structuur aktenummer
-- structuur van algemen en specifieke naamdelen (voornaam, patroniem, tussenvoegsel, achternaam)
+- geldigheid van datums
+- structuur van algemene en specifieke naamdelen (voornaam, patroniem, tussenvoegsel, achternaam)
 - tekencombinaties in naamdelen
 - overeenkomsten tussen naam kind en naam ouder (moeder in geval geen vader bekend)
 - geslacht (op basis van naam)
 - gebruikte rollen
+- leeftijden
