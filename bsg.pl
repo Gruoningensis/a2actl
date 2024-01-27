@@ -8,6 +8,7 @@ use Text::WagnerFischer qw/distance/;
 use Date::Calc qw/check_date Delta_Days/;
 use Config::Simple;
 use File::Basename;
+use Getopt::Long;
 #
 my $dir = dirname(__FILE__);
 
@@ -19,6 +20,11 @@ my( $in, $out);
 my $cfg = new Config::Simple($dir.'/config/a2actl.ini');
 my $bsg = $cfg->get_block('BS_G');
 our $alg = $cfg->get_block('ALGEMEEN');
+
+my $vanaf = 0;
+GetOptions( "vanaf:i" => \$vanaf );
+die "Fout: Startjaar (parameter --vanaf) (".$vanaf.") is groter dan configuratieparameter max_jaar ".$bsg->{'max_jaar'}
+    if $vanaf > $bsg->{'max_jaar'}; 
 
 die "Gebruik: perl bsg.pl <A2A-bestand> <LOG-bestand>\n" 
     if( scalar @ARGV ) ne 2;
@@ -35,21 +41,17 @@ my $reader = XML::LibXML::Reader->new(location => $in)
 open LOG, "> ".$out 
     or die "Kan het logbestand niet openen\n";
 
-my $freq_checks=0;
-if( defined($alg->{'extra_checks'}) and $alg->{'extra_checks'}==1 ) {
-    $freq_checks = 1;
-}
 local $| = 1; # auto flush
 
 my %akten;
 my $n = 0;
+my $c = 0;
 
 while ($reader->nextElement("A2A", "http://Mindbus.nl/A2A")) {
     print LOG join($alg->{'separator'},"Soort","Meldcode","Melding","Gemeente","Jaar","Aktenr","Veld","Waarde","Context","Link","GUID","Scans")."\n"
         if $n==0;
     $n++;
     my $xml = $reader->readOuterXml();
-    #die Dumper($xml);
     
     $xml =~ s/a2a://ig;
     #
@@ -61,9 +63,9 @@ while ($reader->nextElement("A2A", "http://Mindbus.nl/A2A")) {
     my $nnescio = $alg->{'nn'}||'n.n.';
 
     no warnings 'numeric';
-    if( $bsg->{'start_jaar'} and $bsg->{'start_jaar'} ne '' ) {
-        next unless $a2a->{Source}->{SourceDate}->{Year}->{value} >= $bsg->{'start_jaar'};
-    }
+    my $jaar = $a2a->{Source}->{SourceDate}->{Year}->{value}||0;
+    next unless $jaar >= $vanaf;
+    $c++;
     use warnings 'numeric';
     
     # REGEL 1: het aktenummer mag niet leeg zijn
@@ -297,14 +299,13 @@ while ($reader->nextElement("A2A", "http://Mindbus.nl/A2A")) {
         if( $yr < $bsg->{min_jaar} or $yr > $bsg->{max_jaar} ) {
             #REGEL 23: Het aktejaar ligt binnen een bandbreedte
             &logErr('BS_G',"DATUM_FOUT",'SourceDate', $yr,
-                "Jaar lijkt niet te kloppen", $a2a, "PERSOON: ".&maakNaam($fam{'Kind'})." (Kind)");
+                "Het aktejaar lijkt niet te kloppen", $a2a, "PERSOON: ".&maakNaam($fam{'Kind'})." (Kind)");
         }
         if( my $mnd = $a2a->{Source}->{SourceDate}->{Month}->{value} and my $dag = $a2a->{Source}->{SourceDate}->{Day}->{value} ) {
             unless( check_date($yr, $mnd, $dag) ) {
             #REGEL 24: de datum moet geldig zijn
                 &logErr('BS_G',"DATUM_FOUT",'EventDate', $yr."-".$mnd."-".$dag,
-                    "Datum ongeldig", $a2a, "PERSOON: ".&maakNaam($fam{'Kind'})." (Kind)");
-
+                    "De aktedatum is ongeldig", $a2a, "PERSOON: ".&maakNaam($fam{'Kind'})." (Kind)");
             }
         }
     }
@@ -329,4 +330,5 @@ while ($reader->nextElement("A2A", "http://Mindbus.nl/A2A")) {
         }
     }
 }
+warn $c." van ".$n." records gecontroleerd";
 close(LOG);
