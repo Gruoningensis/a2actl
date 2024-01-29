@@ -171,12 +171,12 @@ while ($reader->nextElement("A2A", "http://Mindbus.nl/A2A")) {
                     # REGEL 10: een naamdeel bevat niet vaak meer dan 4 klinkers achtereen
                 if( length $p->{PersonName}->{$w}->{value} && $p->{PersonName}->{$w}->{value} =~ qr/[aeiou]{$alg->{'max_klinkers'},}/ ) {
                     &logErr('BS_G',"KLINKERS", $w, $p->{PersonName}->{$w}->{value},
-                    "Het naamdeel bevat 4 of meer klinkers", $a2a, "PERSOON: ".&maakNaam($p)." (".$rol.")");
+                    "Het naamdeel bevat ".$alg->{'max_klinkers'}." of meer klinkers", $a2a, "PERSOON: ".&maakNaam($p)." (".$rol.")");
                 }
                     # REGEL 11: een naamdeel bevat niet vaak 6 of meer medeklinkers
-                if( length $p->{PersonName}->{$w}->{value} && $p->{PersonName}->{$w}->{value} =~ qr/[bcdfghklmnpqrstvwx]{$alg->{'max_medeklinkers'},}/ ) {
+                if( length $p->{PersonName}->{$w}->{value} && $p->{PersonName}->{$w}->{value} =~ qr/[bcdfghjklmnpqrstvwx]{$alg->{'max_medeklinkers'},}/ ) {
                     &logErr('BS_G',"MEDEKLINKERS", $w, $p->{PersonName}->{$w}->{value},
-                    "Het naamdeel bevat 6 of meer medeklinkers", $a2a, "PERSOON: ".&maakNaam($p)." (".$rol.")");
+                    "Het naamdeel bevat ".$alg->{'max_medeklinkers'}." of meer medeklinkers", $a2a, "PERSOON: ".&maakNaam($p)." (".$rol.")");
                 }
                     # REGEL 12: een naamdeel bevat nooit 3x hetzelfde teken achtereen
                 if( length $p->{PersonName}->{$w}->{value} && $p->{PersonName}->{$w}->{value} =~ /([^\.])\1\1/ ) {
@@ -216,7 +216,6 @@ while ($reader->nextElement("A2A", "http://Mindbus.nl/A2A")) {
         }
         if( $p->{PersonName}->{PersonNamePrefixLastName}->{value} ) {
             unless( $p->{PersonName}->{PersonNamePrefixLastName}->{value} =~ $re_tv ) {
-            #unless( $p->{PersonName}->{PersonNamePrefixLastName}->{value} =~ /^([a-z\']+ ?)*$/ ) {
                 # REGEL 15: tussenvoegsel bestaat uit een vast aantal woorden geschreven met kleine letters
                 &logErr('BS_G',"WAARDE_VERDACHT",'PersonNamePrefixLastName', $p->{PersonName}->{PersonNamePrefixLastName}->{value}, 
             "Het tussenvoegsel lijkt onbekende tekens te bevatten", $a2a, "PERSOON: ".&maakNaam($p)." (".$rol.")");
@@ -228,8 +227,8 @@ while ($reader->nextElement("A2A", "http://Mindbus.nl/A2A")) {
             }
         }
         if( $p->{PersonName}->{PersonNamePatronym}->{value} ) {
-            my $re = qr($alg->{'regex_patroniem'});
-            unless( $p->{PersonName}->{PersonNamePatronym}->{value} =~ $re ) {
+            my $re_pn = qr($alg->{'regex_patroniem'});
+            unless( $p->{PersonName}->{PersonNamePatronym}->{value} =~ $re_pn ) {
                 # REGEL 26: Een patroniem heeft een vast stramien: eindigt op s, zoon of zn
                 &logErr('BS_G',"WAARDE_VERDACHT",'PersonNamePatronym', $p->{PersonName}->{PersonNamePatronym}->{value}, 
             "Het patroniem voldoet niet aan het stramien", $a2a, "PERSOON: ".&maakNaam($p)." (".$rol.")");
