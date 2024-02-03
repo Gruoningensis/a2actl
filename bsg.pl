@@ -118,10 +118,10 @@ while ($reader->nextElement("A2A", "http://Mindbus.nl/A2A")) {
         $relmap{$r->{PersonKeyRef}->[1]->{value}} = $r->{RelationType}->{value};
     }
     my %fam;
-    # REGEL 4: een geboorteakte bestaat uit maar 3 personen (vader, moeder, kind)
+    # REGEL 4: een geboorteakte bestaat uit maximaal 3 personen (vader, moeder, kind)
     if( defined $persons and scalar @{$persons} > 3 ) {
         &logErr('BS_G','TEVEEL_PERSONEN','AantalPersonen', scalar @{$persons}, 
-            "Een geboorteakte bevat doorgaans maar 3 personen.", $a2a, "AKTE");
+            "Een geboorteakte bevat doorgaans maximaal 3 personen.", $a2a, "AKTE");
     }
     # alle personen bij langs
     foreach my $p (@{$persons}) {
@@ -158,8 +158,6 @@ while ($reader->nextElement("A2A", "http://Mindbus.nl/A2A")) {
         #die Dumper($re_nd);
         foreach my $w (qw/PersonNameLastName PersonNameFirstName PersonNamePatronym/) {
             if( defined($p->{PersonName}->{$w}->{value}) ) {
-                #die Dumper($p) if lc $p->{PersonName}->{$w}->{value} eq lc $nnescio;
-                #unless( (lc $p->{PersonName}->{$w}->{value} eq $nnescio or $p->{PersonName}->{$w}->{value} eq "-" or $p->{PersonName}->{$w}->{value} =~ $re_nd) ) {
                 if( lc $p->{PersonName}->{$w}->{value} ne lc $nnescio and $p->{PersonName}->{$w}->{value} ne "-") {
                         unless(  $p->{PersonName}->{$w}->{value} =~ $re_nd ) {
                         # REGEL 9: een naamdeel bestaat in principe uit een woord beginnende met een hoofdletter,
@@ -168,13 +166,14 @@ while ($reader->nextElement("A2A", "http://Mindbus.nl/A2A")) {
                         "De achter- of voornaam of het patroniem lijkt onbekende tekens te bevatten", $a2a, "PERSOON: ".&maakNaam($p)." (".$rol.")");
                         }
                 }
-                    # REGEL 10: een naamdeel bevat niet vaak meer dan 4 klinkers achtereen
+                    # REGEL 10: een naamdeel bevat niet vaak meer dan X klinkers achtereen
+                    # aantal is configurabel via parameter max_klinkers
                 if( length $p->{PersonName}->{$w}->{value} && $p->{PersonName}->{$w}->{value} =~ qr/[aeiou]{$alg->{'max_klinkers'},}/ ) {
                     &logErr('BS_G',"KLINKERS", $w, $p->{PersonName}->{$w}->{value},
                     "Het naamdeel bevat ".$alg->{'max_klinkers'}." of meer klinkers", $a2a, "PERSOON: ".&maakNaam($p)." (".$rol.")");
                 }
                     # REGEL 11: een naamdeel bevat niet vaak 6 of meer medeklinkers
-                if( length $p->{PersonName}->{$w}->{value} && $p->{PersonName}->{$w}->{value} =~ qr/[bcdfghjklmnpqrstvwx]{$alg->{'max_medeklinkers'},}/ ) {
+                if( length $p->{PersonName}->{$w}->{value} && $p->{PersonName}->{$w}->{value} =~ qr/[bcdfghklmnpqrstvwx]{$alg->{'max_medeklinkers'},}/ ) {
                     &logErr('BS_G',"MEDEKLINKERS", $w, $p->{PersonName}->{$w}->{value},
                     "Het naamdeel bevat ".$alg->{'max_medeklinkers'}." of meer medeklinkers", $a2a, "PERSOON: ".&maakNaam($p)." (".$rol.")");
                 }
@@ -182,7 +181,6 @@ while ($reader->nextElement("A2A", "http://Mindbus.nl/A2A")) {
                 if( length $p->{PersonName}->{$w}->{value} && $p->{PersonName}->{$w}->{value} =~ /([^\.])\1\1/ ) {
                     &logErr('BS_G',"HERHALING", $w, $p->{PersonName}->{$w}->{value},
                     "Het naamdeel bevat 3x hetzelfde teken", $a2a, "PERSOON: ".&maakNaam($p)." (".$rol.")");
-                    #print "3x hetzelfde teken: ".$p->{PersonName}->{$w}->{value}."\n";
                 }
             }
         }
@@ -198,7 +196,7 @@ while ($reader->nextElement("A2A", "http://Mindbus.nl/A2A")) {
                   &logErr('BS_G',"GESLACHT_FOUT", "PersonNameFirstName", $temp[0],
                   "Op basis van de naam zou dit een man kunnen zijn ipv een vrouw", $a2a, "PERSOON: ".&maakNaam($p)." (".$rol.")");
                    } elsif( ($bla2 eq 'a' or $bla3 =~ /([bdfgknps]je|.th)/) and $p->{Gender}->{value} eq "Man" and !grep { $temp[0] eq $_ } @{$alg->{mannen}}) {
-                      # REGEL 14a:  verdacht als de naam van een man op een vrouwelijke uitgang eindigt
+                   # REGEL 14a:  verdacht als de naam van een man op een vrouwelijke uitgang eindigt
                   &logErr('BS_G',"GESLACHT_FOUT", "PersonNameFirstName", $temp[0],
                   "Op basis van de naam zou dit een vrouw kunnen zijn ipv een man", $a2a, "PERSOON: ".&maakNaam($p)." (".$rol.")");
                    } elsif( ($bla3 =~ /(ien|[wnfb]ke)/ and !grep { $temp[0] eq $_} @{$alg->{mannen}} ) and $p->{Gender}->{value} eq "Man" ) {
@@ -218,12 +216,12 @@ while ($reader->nextElement("A2A", "http://Mindbus.nl/A2A")) {
             unless( $p->{PersonName}->{PersonNamePrefixLastName}->{value} =~ $re_tv ) {
                 # REGEL 15: tussenvoegsel bestaat uit een vast aantal woorden geschreven met kleine letters
                 &logErr('BS_G',"WAARDE_VERDACHT",'PersonNamePrefixLastName', $p->{PersonName}->{PersonNamePrefixLastName}->{value}, 
-            "Het tussenvoegsel lijkt onbekende tekens te bevatten", $a2a, "PERSOON: ".&maakNaam($p)." (".$rol.")");
+                "Het tussenvoegsel lijkt onbekende tekens te bevatten", $a2a, "PERSOON: ".&maakNaam($p)." (".$rol.")");
             }
-                #REGEL 16: tussenvoegsel bevat nooit 3x hetzelfde teken
+            #REGEL 16: tussenvoegsel bevat nooit 3x hetzelfde teken
             if( $p->{PersonName}->{PersonNamePrefixLastName}->{value} =~ /(.)\1\1/ ) {
                 &logErr('BS_G',"WAARDE_VERDACHT",'PersonNamePrefixLastName', $p->{PersonName}->{PersonNamePrefixLastName}->{value}, 
-            "Het tussenvoegsel lijkt onbekende tekens te bevatten", $a2a, "PERSOON: ".&maakNaam($p)." (".$rol.")");
+                "Het tussenvoegsel lijkt onbekende tekens te bevatten", $a2a, "PERSOON: ".&maakNaam($p)." (".$rol.")");
             }
         }
         if( $p->{PersonName}->{PersonNamePatronym}->{value} ) {
@@ -231,15 +229,18 @@ while ($reader->nextElement("A2A", "http://Mindbus.nl/A2A")) {
             unless( $p->{PersonName}->{PersonNamePatronym}->{value} =~ $re_pn ) {
                 # REGEL 26: Een patroniem heeft een vast stramien: eindigt op s, zoon of zn
                 &logErr('BS_G',"WAARDE_VERDACHT",'PersonNamePatronym', $p->{PersonName}->{PersonNamePatronym}->{value}, 
-            "Het patroniem voldoet niet aan het stramien", $a2a, "PERSOON: ".&maakNaam($p)." (".$rol.")");
+                "Het patroniem voldoet niet aan het stramien", $a2a, "PERSOON: ".&maakNaam($p)." (".$rol.")");
             }
         }
         if( my $prof = $p->{Profession}->{value} ) {
-                #REGEL 17: beroep bestaat uit een vast stramien
             unless( $prof eq "" or $prof =~ /^([\p{Ll}\p{Lu}0-9\'\-\(\)\.\/ ,]|&amp;)+$/ ) {
+                #REGEL 17: beroep bestaat uit een vast stramien
                 &logErr('BS_G',"WAARDE_VERDACHT",'Profession', $prof, 
                     "Het beroep lijkt onbekende tekens te bevatten", $a2a, "PERSOON: ".&maakNaam($p)." (".$rol.")");
-            }
+            } #elsif( $prof =~ /\.$/ ) {
+            #  &logErr('BS_O',"WAARDE_AFGEKAPT",'Profession', $prof, 
+            #    "Het beroep is misschien afgekapt op een vaste lengte", $a2a, "PERSOON: ".&maakNaam($p)." (".$rol.")");
+                #}
         }
         if( my $pal = $p->{Age}->{PersonAgeLiteral}->{value} ) {
             if( $pal =~ /^(\d+)( (jaar|jaren))?$/ ) {
@@ -279,7 +280,7 @@ while ($reader->nextElement("A2A", "http://Mindbus.nl/A2A")) {
             my $d = $alg->{'edit_distance'};
             # edit distance kleiner maken als het een korte naam betreft
             $d -= 1 if length $achnaov <= 4;
-            if( length $achvaov and $achvaov ne '-' and lc $achvaov ne $nnescio and  distance( $achnaov, $achvaov ) <= $d  ) {
+            if( length $achvaov and $achvaov ne '-' and lc $achvaov ne lc $nnescio and  distance( $achnaov, $achvaov ) <= $d  ) {
                 # REGEL 21: achternaam vader bevat geen vreemde waardes en ligt dicht bij die van de overledene
                 &logErr('BS_G',"NAAM_MISMATCH",'PersonNameLastName', $fam{'Kind'}->{PersonName}->{PersonNameLastName}->{value}." <=> ".$fam{'Vader'}->{PersonName}->{PersonNameLastName}->{value},
                         "Naam vader en kind komen niet overeen, maar liggen dicht bijelkaar. Typefout?", $a2a, "PERSOON: ".&maakNaam($fam{'Kind'})." (Kind)");
@@ -326,6 +327,19 @@ while ($reader->nextElement("A2A", "http://Mindbus.nl/A2A")) {
             #REGEL 25: Levenloos geboren personen hebben geen relaties
             &logErr('BS_G',"SOORT_FOUT",'SourceRemark', 'AkteSoort',
                     "Dit levenloos geboren persoon heeft een relatie. Klopt dit wel?", $a2a, "PERSOON: ".&maakNaam($fam{'Kind'})." (Kind)");
+        }
+    }
+}
+foreach my $p (sort keys %akten) {
+    foreach my $y (sort keys %{$akten{$p}}) {
+        my $counter = 0;
+        foreach my $n (sort {$a <=> $b} keys %{$akten{$p}{$y}}) {
+            # REGEL: numeriek verschil tussen opeenvolgende aktenummers is niet groter dan 1
+            if( ($n-$counter) > 1 or ($n-$counter) < 1 ) {
+                &logErr('BS_O',"AKNUM_FOUT",'DocumentNumber', $p."/".$y."/".$n." ==> ".$counter,
+                "Verschil met vorige aktenummer meer dan 1. Ontbreekt er wat?", undef, "ALLE AKTEN");
+            }
+            $counter = $n;
         }
     }
 }
