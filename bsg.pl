@@ -60,7 +60,7 @@ while ($reader->nextElement("A2A", "http://Mindbus.nl/A2A")) {
     my $ref = XML::Bare->new(text => $xml);
     my $root = $ref->parse();
     my $a2a = $root->{A2A};
-    my $nnescio = $alg->{'nn'}||'n.n.';
+    my $nnescio = qr/$alg->{'nn'}/i;
 
     no warnings 'numeric';
     my $jaar = $a2a->{Source}->{SourceDate}->{Year}->{value}||0;
@@ -147,7 +147,7 @@ while ($reader->nextElement("A2A", "http://Mindbus.nl/A2A")) {
             # 
             &logErr('BS_G',"NAAMDEEL_LEEG",'PatroniemOfAchternaam', "", 
             "De achternaam en het patroniem zijn beide leeg", $a2a, "PERSOON: ".&maakNaam($p)." (".$rol.")");
-        } elsif( not(length($p->{PersonName}->{PersonNameFirstName}->{value})) and lc $p->{PersonName}->{PersonNameLastName}->{value} ne lc $nnescio) {
+        } elsif( not(length($p->{PersonName}->{PersonNameFirstName}->{value})) and lc $p->{PersonName}->{PersonNameLastName}->{value} !~ $nnescio) {
             # REGEL 8: voornaam mag niet leeg zijn
             &logErr('BS_G',"NAAMDEEL_LEEG",'Voornaam', "", 
                 "De voornaam is leeg", $a2a, "PERSOON: ".&maakNaam($p)." (".$rol.")");
@@ -158,7 +158,7 @@ while ($reader->nextElement("A2A", "http://Mindbus.nl/A2A")) {
         #die Dumper($re_nd);
         foreach my $w (qw/PersonNameLastName PersonNameFirstName PersonNamePatronym/) {
             if( defined($p->{PersonName}->{$w}->{value}) ) {
-                if( lc $p->{PersonName}->{$w}->{value} ne lc $nnescio and $p->{PersonName}->{$w}->{value} ne "-") {
+                if( lc $p->{PersonName}->{$w}->{value} !~ $nnescio and $p->{PersonName}->{$w}->{value} ne "-") {
                         unless(  $p->{PersonName}->{$w}->{value} =~ $re_nd ) {
                         # REGEL 9: een naamdeel bestaat in principe uit een woord beginnende met een hoofdletter,
                         # gevolg door kleine letters, eventueel gevolgd door een tussenvoegsel
@@ -208,7 +208,7 @@ while ($reader->nextElement("A2A", "http://Mindbus.nl/A2A")) {
                    # REGEL 14c: een geslacht moet Man of Vrouw zijn
                    #   &logErr('BS_G',"GESLACHT_FOUT", "Gender", $gr,
                    #   "Geslacht moet Man of Vrouw zijn", $a2a, "PERSOON: ".&maakNaam($p)." (".$rol.")");
-                   #  REGEL uitgeschakeld ivm teveel vermeldingen
+                   #  REGEL uitgeschakeld ivm te veel vermeldingen
                 }
              }
         }
@@ -280,13 +280,13 @@ while ($reader->nextElement("A2A", "http://Mindbus.nl/A2A")) {
             my $d = $alg->{'edit_distance'};
             # edit distance kleiner maken als het een korte naam betreft
             $d -= 1 if length $achnaov <= 4;
-            if( length $achvaov and $achvaov ne '-' and lc $achvaov ne lc $nnescio and  distance( $achnaov, $achvaov ) <= $d  ) {
+            if( length $achvaov and $achvaov ne '-' and lc $achvaov !~ $nnescio and  distance( $achnaov, $achvaov ) <= $d  ) {
                 # REGEL 21: achternaam vader bevat geen vreemde waardes en ligt dicht bij die van de overledene
                 &logErr('BS_G',"NAAM_MISMATCH",'PersonNameLastName', $fam{'Kind'}->{PersonName}->{PersonNameLastName}->{value}." <=> ".$fam{'Vader'}->{PersonName}->{PersonNameLastName}->{value},
                         "Naam vader en kind komen niet overeen, maar liggen dicht bijelkaar. Typefout?", $a2a, "PERSOON: ".&maakNaam($fam{'Kind'})." (Kind)");
             } elsif( $achmoov ne $achnaov ) {
             # achternaam ook niet gelijk aan die van de moeder
-                if( length $achmoov and $achmoov ne '-' and lc $achmoov ne $nnescio and distance( $achmoov, $achnaov ) <= $d) {
+                if( length $achmoov and $achmoov ne '-' and lc $achmoov !~ $nnescio and distance( $achmoov, $achnaov ) <= $d) {
                     # REGEL 22: achternaam moeder is niet gelijk, maar ligt dicht bij de naam overledene
                     &logErr('BS_G',"NAAM_MISMATCH",'PersonNameLastName', $fam{'Kind'}->{PersonName}->{PersonNameLastName}->{value}." <=> ".$fam{'Moeder'}->{PersonName}->{PersonNameLastName}->{value},
                         "Naam moeder en kind komen niet overeen, maar liggen dicht bijeelkaar. Typefout?", $a2a, "PERSOON: ".&maakNaam($fam{'Kind'})." (Kind)");
