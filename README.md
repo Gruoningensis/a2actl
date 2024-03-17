@@ -61,6 +61,20 @@ Om het aantal 'false positives' in te perken kan gebruikgemaakt worden van param
 mannen=Arien,Adrien,Jurrien,Chretien,Sebastien,Esra,Cretien,Bonaventura,Josua,Jozua,Bastien,Juda,Julien,Jurien,Lucien,Martien
 vrouwen=Agnes,Angenes,Judik,Margo,Marian,Marjan,Agenes,Cato,Catho,Agnees,Angenees,Agnus,Gertrudes,Gertrudus
 ```
+*Kolommen*
+De volgende kolommen zijn aanwezig in de output:
+- Type (aktesoort)
+- Meldcode (korte aanduiding van het type melding)
+- Melding (Specifiekere uitleg van het mogelijke probleem)
+- Gemeente (Gemeentenaam uit de akte)
+- Jaar (Aktejaar)
+- Aktenr (Aktenummer uit de akte)
+- Veld (Het A2A-veld waarvoor de melding geldt)
+- Waarde (De waarde waarvoor de melding geldt, [LEEG] indien deze waarde leeg is)
+- Context (Context waarbinnen de melding is gegenereerd, bv. de akte of een specifieke persoon)
+- Link (Een hyperlink naar de akte)
+- GUID (De GUID van de akte, bijvoorbeeld om een interne link naar het CBS te kunnen maken tbv correctie)
+- Scans (Aanduiding of er scans beschikbaar zijn bij de akte, met het oog op het uitvoeren van de controle)
 ## Controles
 Controles worden uitgevoerd op:
 - structuur aktenummer
