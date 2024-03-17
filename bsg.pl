@@ -60,7 +60,7 @@ while ($reader->nextElement("A2A", "http://Mindbus.nl/A2A")) {
     my $ref = XML::Bare->new(text => $xml);
     my $root = $ref->parse();
     my $a2a = $root->{A2A};
-    my $nnescio = qr/$alg->{'nn'}/i;
+    my $nnescio = qr/$alg->{'regex_nn'}/i;
 
     no warnings 'numeric';
     my $jaar = $a2a->{Source}->{SourceDate}->{Year}->{value}||0;
