@@ -15,7 +15,7 @@ sub logErr() {
 
 sub maakNaam($) {
   my $p = shift;
-  my $text;
+  my $text="";
   map { 
     if( length $_ ) {
       $text.=" " if length $text;
