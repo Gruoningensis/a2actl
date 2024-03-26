@@ -12,10 +12,10 @@ include/a2actl.ini
 ```
 In het configuratiebestand vind je de uitleg van wat een variabele precies doet. Een voorbeeld:
 ```
-[ALG]
-separator=#
+[BS_G]
+min_leeftijd=18
 ```
-De variable *separator* wordt hier ingesteld op een #-teken, wat betekent dat de kolommen in de output middels dit #-teken van elkaar gescheiden worden. Het is verstandig om een teken te kiezen dat niet voorkomt in de verschillende tekstvelden die worden weggeschreven.
+De variabele *min_leeftijd* wordt gebruikt om in te stellen wat de ondergrens is qua leeftijd voor het genereren van een melding over een te jonge vader of moeder bij een geboorteakte. In dit geval wordt pas een melding gegenereerd wanneer deze 17 jaar of jonger is.
 ## Gebruik
 Plaats de te controleren A2A-bestanden in een map binnen de geclonede repository:
 ```
@@ -43,7 +43,7 @@ mkdir log
 for x in data/*.xml
 do
   file=$(basename $x)
-  log="./log/"${file%%.xml}".csv"
+  log="./log/"${file%%.xml}".xlsx"
   perl bsg.pl $x $log
 done
 ```
@@ -55,8 +55,8 @@ perl bsg.pl --vanaf 1922 <pad naar A2A-bestand> <pad naar logbestand>
 De verwerking van een bestand wordt hierdoor niet sneller, alle records moeten immers gecontroleerd worden op jaartal. Het scheelt met name in de omvang van de output.
 Let op dat het script hierbij alleen records verwerkt waarvan een SourceDate/Year bekend is.
 ## Verwerking resultaten
-Het resultaat van een run van het script is een logfile die middels Excel kan worden omgezet in een spreadsheet, alwaar de (mogelijke) fouten geanalyseerd kunnen worden. Het is van belang om daarbij te realiseren dat het script 'false positives' zal genereren. Er wordt alleen een vermoeden uitgesproken van een fout; of dit daadwerkelijk het geval is zal geverifieerd moeten worden. Ten behoeve daarvan worden de links naar de records meegenomen in de output.
-Om het aantal 'false positives' in te perken kan gebruikgemaakt worden van parameters in het configuratiebestand. Zo bepalen de parameters 'mannen' en 'vrouwen' welke namen respectievelijk niet als man of vrouw worden herkend. Dit onderscheid is veelal regionaal.
+Het resultaat van een run van het script is een Excel-spreadsheet, waarmee de (mogelijke) fouten geanalyseerd kunnen worden. Het is van belang om daarbij te realiseren dat het script 'false positives' zal genereren. Er wordt alleen een vermoeden uitgesproken van een fout; of dit daadwerkelijk het geval is zal geverifieerd moeten worden. Ten behoeve daarvan worden de links naar de records meegenomen in de output.
+Om het aantal 'false positives' in te perken kan gebruikgemaakt worden van parameters in het configuratiebestand. Zo bepalen de parameters 'mannen' en 'vrouwen' welke namen respectievelijk niet als man of vrouw moeten worden herkend. Dit onderscheid is veelal regionaal.
 ```
 mannen=Arien,Adrien,Jurrien,Chretien,Sebastien,Esra,Cretien,Bonaventura,Josua,Jozua,Bastien,Juda,Julien,Jurien,Lucien,Martien
 vrouwen=Agnes,Angenes,Judik,Margo,Marian,Marjan,Agenes,Cato,Catho,Agnees,Angenees,Agnus,Gertrudes,Gertrudus

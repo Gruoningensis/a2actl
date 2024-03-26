@@ -6,11 +6,12 @@ sub logErr() {
   my($TPE, $ERR, $FLD, $VAL, $DSC, $REF, $CTX) = @_;
   my $guid = $REF->{Source}->{RecordGUID}->{value};
   $guid =~ s/[{}]//g;
+  $err++;
   #die Dumper($REF->{Source});
-  print LOG join( $alg->{'separator'}, $TPE, $ERR, $DSC, $REF->{Source}->{SourcePlace}->{Place}->{value}||"[LEEG]",
+  return [ $TPE, $ERR, $DSC, $REF->{Source}->{SourcePlace}->{Place}->{value}||"[LEEG]",
     $REF->{Source}->{SourceDate}->{Year}->{value}||"[LEEG]", $REF->{Source}->{SourceReference}->{DocumentNumber}->{value}||"[LEEG]",
     $FLD, $iconv->convert($VAL)||"[LEEG]", $iconv->convert($CTX), $REF->{Source}->{SourceDigitalOriginal}->{value}||"Geen specifieke link",
-    $guid, (defined $REF->{Source}->{SourceAvailableScans} ? "Scans aanwezig": "Geen scans aanwezig"))."\n";
+    $guid, (defined $REF->{Source}->{SourceAvailableScans} ? "Scans aanwezig": "Geen scans aanwezig") ];
 }
 
 sub maakNaam($) {
