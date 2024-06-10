@@ -1,6 +1,5 @@
 data/
 log/
-bsh.pl
 bso.pl
 *.log
 *.xlsx
