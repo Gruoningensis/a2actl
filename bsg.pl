@@ -30,6 +30,8 @@ die "Gebruik: perl bsg.pl <A2A-bestand> <LOG-bestand>\n"
     if( scalar @ARGV ) ne 2;
 $in = $ARGV[0];
 $out = $ARGV[1];
+$in eq $out
+    and die "Naam van A2A-bestand en LOG-bestand mogen niet gelijk zijn.";
 
 -e $in
     or die "A2A-bestand bestaat niet\n";
@@ -41,7 +43,8 @@ my $reader = XML::LibXML::Reader->new(location => $in)
 $out =~ /\.xlsx/i
     or die "Het logbestand moet een .XLSX extensie hebben";
 open LOG, "> ".$out 
-    or die "Kan het logbestand niet openen\n";
+    or die "Kan het logbestand niet aanmaken\n";
+close(LOG);
 my $xlsx = Excel::Writer::XLSX->new($out);
 my $logs = $xlsx->add_worksheet();
 
@@ -64,6 +67,8 @@ while ($reader->nextElement("A2A", "http://Mindbus.nl/A2A")) {
     my $ref = XML::Bare->new(text => $xml);
     my $root = $ref->parse();
     my $a2a = $root->{A2A};
+
+    next unless $a2a->{Source}->{SourceType}->{value} eq 'BS Geboorte';
     my $nnescio = qr/$alg->{'regex_nn'}/i;
 
     no warnings 'numeric';
@@ -349,4 +354,3 @@ foreach my $p (sort keys %akten) {
 }
 warn $c." van ".$n." records gecontroleerd";
 $xlsx->close();
-close(LOG);
