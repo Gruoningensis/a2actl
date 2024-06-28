@@ -1,11 +1,13 @@
 # A2ACTL
-Deze repository bestaat uit een verzameling Perl-scripts waarmee het mogelijk is om A2A-XML-bestanden te controleren op een aantal veelvoorkomende fouten. De output bestaat uit een tekstbestand met een vast aantal kolommen, die middels een in te stellen scheidingsteken zijn gescheiden.  
+Deze repository bestaat uit een verzameling Perl-scripts waarmee het mogelijk is om A2A-XML-bestanden te controleren op een aantal veelvoorkomende fouten. De output bestaat uit een Excel-bestand met een vast aantal kolommen.  
 Op dit moment zijn de volgende scripts publiek beschikbaar:
 ```
 bsg.pl
+bsh.pl
+bso.pl
 ```
 ## Configuratie
-De controles kunnen middels een configuratiebestand getweaked worden. Dit bestand kent een algemne sectie [ALG] en daarnaast secties per script. In het geval van bovengenoemd script is dit [BS_G].
+De controles kunnen middels een configuratiebestand getweaked worden. Dit bestand kent een algemene sectie [ALG] en daarnaast secties per script. In het geval van bovengenoemde script zijn dit [BS_G], [BS_H] en [BS_O].
 Het configuratiebestand vind je hier:
 ```
 include/a2actl.ini
@@ -22,7 +24,7 @@ Plaats de te controleren A2A-bestanden in een map binnen de geclonede repository
 cd a2actl
 mkdir data
 cd data
-<download A2A-bestandn met wget>
+<download A2A-bestanden met wget>
 ```
 Om de scripts systeemafhankelijk te kunnen draaien wordt een Dockerfile meegeleverd die alle benodigde modules installeert op een ubuntu-image. Deze image kan als volgt gebouwd worden
 ```
@@ -54,6 +56,8 @@ perl bsg.pl --vanaf 1922 <pad naar A2A-bestand> <pad naar logbestand>
 ```
 De verwerking van een bestand wordt hierdoor niet sneller, alle records moeten immers gecontroleerd worden op jaartal. Het scheelt met name in de omvang van de output.
 Let op dat het script hierbij alleen records verwerkt waarvan een SourceDate/Year bekend is.
+## Aktesoorten
+Tijdens de uitvoering van een script wordt alleen de specifieke aktesoort behorende bij een script gecontroleerd. Dit gebeurt aan de hand van het Source/SourceDate-element. Meerdere aanroepen van verschillende scripts zijn dus nodig om alle akten te controleren in een bestand dat meerdere aktesoorten bevat. Dit komt sporadisch voor, met name rond de introductie van de Burgerlijke Stand.
 ## Verwerking resultaten
 Het resultaat van een run van het script is een Excel-spreadsheet, waarmee de (mogelijke) fouten geanalyseerd kunnen worden. Het is van belang om daarbij te realiseren dat het script 'false positives' zal genereren. Er wordt alleen een vermoeden uitgesproken van een fout; of dit daadwerkelijk het geval is zal geverifieerd moeten worden. Ten behoeve daarvan worden de links naar de records meegenomen in de output.
 Om het aantal 'false positives' in te perken kan gebruikgemaakt worden van parameters in het configuratiebestand. Zo bepalen de parameters 'mannen' en 'vrouwen' welke namen respectievelijk niet als man of vrouw moeten worden herkend. Dit onderscheid is veelal regionaal.
@@ -72,9 +76,11 @@ De volgende kolommen zijn aanwezig in de output:
 - Veld (Het A2A-veld waarvoor de melding geldt)
 - Waarde (De waarde waarvoor de melding geldt, [LEEG] indien deze waarde leeg is)
 - Context (Context waarbinnen de melding is gegenereerd, bv. de akte of een specifieke persoon)
-- Link (Een hyperlink naar de akte)
+- Link (de URL naar de akte)[^1]
 - GUID (De GUID van de akte, bijvoorbeeld om een interne link naar het CBS te kunnen maken tbv correctie)
 - Scans (Aanduiding of er scans beschikbaar zijn bij de akte, met het oog op het uitvoeren van de controle)
+
+[^1]: Vanwege een beperking op het aantal hyperlinks in Excel wordt de URL weggeschreven met een apostrof aan het begin.
 ## Controles
 Controles worden uitgevoerd op:
 - structuur aktenummer
