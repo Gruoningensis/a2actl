@@ -283,20 +283,20 @@ while ($reader->nextElement("A2A", "http://Mindbus.nl/A2A")) {
     my $achmoov = $fam{'Moeder'}->{PersonName}->{PersonNameLastName}->{value}||"";
     my $achnaov = $fam{'Kind'}->{PersonName}->{PersonNameLastName}->{value}||"";
     if( length $achnaov and lc $achnaov ne 'n.n.' and $achnaov ne '-') {
-        # achternaam overledene is gevuld en niet bepaalde waardes
+        # achternaam kind is gevuld en niet bepaalde waardes
         unless( $achvaov eq $achnaov ) {
-            # achternaam overledene is niet gelijk aan die van de vader
+            # achternaam kind is niet gelijk aan die van de vader
             my $d = $alg->{'edit_distance'};
             # edit distance kleiner maken als het een korte naam betreft
             $d -= 1 if length $achnaov <= 4;
             if( length $achvaov and $achvaov ne '-' and lc $achvaov !~ $nnescio and  distance( $achnaov, $achvaov ) <= $d  ) {
-                # REGEL 21: achternaam vader bevat geen vreemde waardes en ligt dicht bij die van de overledene
+                # REGEL 21: achternaam vader bevat geen vreemde waardes en ligt dicht bij die van het kind
                 $logs->write_row($err, 0, &logErr('BS_G',"NAAM_MISMATCH",'PersonNameLastName', $fam{'Kind'}->{PersonName}->{PersonNameLastName}->{value}." <=> ".$fam{'Vader'}->{PersonName}->{PersonNameLastName}->{value},
                         "Naam vader en kind komen niet overeen, maar liggen dicht bijelkaar. Typefout?", $a2a, "PERSOON: ".&maakNaam($fam{'Kind'})." (Kind)"));
             } elsif( $achmoov ne $achnaov ) {
             # achternaam ook niet gelijk aan die van de moeder
                 if( length $achmoov and $achmoov ne '-' and lc $achmoov !~ $nnescio and distance( $achmoov, $achnaov ) <= $d) {
-                    # REGEL 22: achternaam moeder is niet gelijk, maar ligt dicht bij de naam overledene
+                    # REGEL 22: achternaam moeder is niet gelijk, maar ligt dicht bij de naam kind
                     $logs->write_row($err, 0, &logErr('BS_G',"NAAM_MISMATCH",'PersonNameLastName', $fam{'Kind'}->{PersonName}->{PersonNameLastName}->{value}." <=> ".$fam{'Moeder'}->{PersonName}->{PersonNameLastName}->{value},
                         "Naam moeder en kind komen niet overeen, maar liggen dicht bijeelkaar. Typefout?", $a2a, "PERSOON: ".&maakNaam($fam{'Kind'})." (Kind)"));
                 }
@@ -346,7 +346,7 @@ foreach my $p (sort keys %akten) {
             # REGEL: numeriek verschil tussen opeenvolgende aktenummers is niet groter dan 1
             if( ($n-$counter) > 1 or ($n-$counter) < 1 ) {
                 $logs->write_row($err, 0, &logErr('BS_G',"AKNUM_FOUT",'DocumentNumber', $p."/".$y."/".$n." ==> ".$counter,
-                "Verschil met vorige aktenummer meer dan 1. Ontbreekt er wat?", undef, "ALLE AKTEN"));
+                "Verschil met vorige aktenummer groter dan 1. Ontbreekt er een akte?", undef, "ALLE AKTEN"));
             }
             $counter = $n;
         }
