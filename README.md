@@ -144,7 +144,7 @@ De volgende kolommen zijn aanwezig in de output:
 - GUID (De GUID van de akte, bijvoorbeeld om een interne link naar het CBS te kunnen maken tbv correctie)
 - Scans (Aanduiding of er scans beschikbaar zijn bij de akte, met het oog op het uitvoeren van de controle)
 
-[^1]: Vanwege een beperking op het aantal hyperlinks in Excel wordt de URL weggeschreven zonder *http* of *https* ervoor. 
+[^1]: Vanwege een beperking op het aantal hyperlinks in Excel wordt de URL weggeschreven met een *apostrof* ervoor. Dit kan met zoeken en vervangen in URL gecorrigeerd worden.
 ### Tips ten aanzien van het gebruik van de Excel-rapportage
 - Gebruik filters om de meldingen op *meldcode* en *melding* te filteren. Controleer vervolgens aan de hand van het veld *waarde* of het waarschijnlijk is dat het daadwerkelijke fouten betreft. 
 - Wanneer het script veel foutmeldingen genereert, prioriteer dan de meldingen die van invloed zijn op de vindbaarheid van een akte, bv. de spelling van namen.
