@@ -1,45 +1,89 @@
 # A2ACTL
-Deze repository bestaat uit een verzameling Perl-scripts waarmee het mogelijk is om A2A-XML-bestanden te controleren op een aantal veelvoorkomende fouten. De output bestaat uit een Excel-bestand met een vast aantal kolommen.  
-Op dit moment zijn de volgende scripts publiek beschikbaar:
+Deze repository bestaat uit een verzameling Perl-scripts waarmee het mogelijk is om A2A-XML-bestanden van de Burgerlijke Stand te controleren op een aantal veelvoorkomende fouten. De scripts zouden zowel moeten werken voor bestanden afkomstig van opendata.archieven.nl als van opendata.picturae.com. De output bestaat uit een Excel-bestand met een vast aantal kolommen.  
+Voor elk van de aktesoorten (geboorte, huwelijk en overlijden) is er een apart script beschikbaar:
 ```
 bsg.pl
 bsh.pl
 bso.pl
 ```
+## Controles
+De scripts voeren een aantal controles uit op de inhoud van elke akte:
+- aktenummer
+ - afwijkende tekens
+ - afwijkend stramien
+ - gaten in de nummering
+- dateringen
+ - geldigheid van de datum
+ - afwijkingen van begin- of einddatum aktesoort
+- leeftijd
+ - te oud
+ - te jong
+- rollen
+ - aantal rollen
+ - aanwezigheid verplichte/verwachte rollen
+ - dubbele rollen
+- namen en naamdelen
+ - stramien/structuur van een naam(deel)
+ - herhalende tekens
+ - aantal opvolgende (mede)klinkers
+ - afwijkingen tussen naam kind en naam ouder
+ - geslacht (op basis van naam)
+- beroepen
+ - herhalende tekens
 ## Configuratie
-De controles kunnen middels een configuratiebestand getweaked worden. Dit bestand kent een algemene sectie [ALG] en daarnaast secties per script. In het geval van bovengenoemde script zijn dit [BS_G], [BS_H] en [BS_O].
-Het configuratiebestand vind je hier:
+Deze controles kunnen veel *vermoede* fouten opleveren. Om het aantal onnodige foutmeldingen terug te drinigen kunnen de controles kunnen middels een configuratiebestand getweaked worden. Dit configuratiebestand vind je hier:
 ```
 include/a2actl.ini
 ```
-In het configuratiebestand vind je de uitleg van wat een variabele precies doet. Een voorbeeld:
+Het bestand kent een algemene sectie [ALG] voor instellingen die voor elke aktesoort gelden en daarnaast een secties per aktesoort: [BS_G], [BS_H] en [BS_O].
+In het configuratiebestand vind je een nadereuitleg van wat een variabele precies doet. Een voorbeeld:
 ```
 [BS_G]
 min_leeftijd=18
 ```
-De variabele *min_leeftijd* wordt gebruikt om in te stellen wat de ondergrens is qua leeftijd voor het genereren van een melding over een te jonge vader of moeder bij een geboorteakte. In dit geval wordt pas een melding gegenereerd wanneer deze 17 jaar of jonger is.
+De instelling *min_leeftijd* wordt gebruikt om te bepalen wat de ondergrens is qua leeftijd voor het genereren van een melding over een te jonge vader of moeder bij een geboorteakte. In dit geval wordt pas een melding gegenereerd wanneer deze personen 17 jaar of jonger zijn.
+```
+[ALG]
+regex_nn=^(N\\.N\\.|NN)$
+```
+De instelling *regex_nn* bepaalt welk stramien mag worden verwacht voor een *nomen nescio* (naam onbekend) in de akte. In dit specifieke geval wordt er geen melding gegenereerd als een naamdeel de waarden 'NN' of 'N.N.' bevat. De instelling vereist het gebruik van een reguliere expressie, waarbij ge-escapete waarden dubbel ge-escapet moeten worden.
+```
+[BS_H]
+min_jaar=1811
+```
+De instelling *min_jaar* bepaalt wat het vroegste aktejaar is dat mag voorkomen in de datering van de akte. In de meeste provincies begint de Burgerlijke Stand in 1811, maar er zijn uitzonderingen op deze regel.
+## Installatie ##
+Clone deze repository naar een lokaal systeem:
+```
+git clone https://github.com/Gruoningensis/a2actl.git
+```
 ## Gebruik
-Plaats de te controleren A2A-bestanden in een map binnen de geclonede repository:
+### Installatievereisten
+Een systeem waarop Docker geïnstalleerd is of een systeem waarop Perl en enkele modules geínstalleerd zijn/kunnen worden.
+### Bestanden klaarzetten
+Download de te controleren A2A-bestanden van de betreffende opendata-server. Plaats deze in een map binnen de geclonede repository:
 ```
 cd a2actl
 mkdir data
 cd data
-<download A2A-bestanden met wget>
+<download A2A-bestanden met bv wget>
 ```
-Om de scripts systeemafhankelijk te kunnen draaien wordt een Dockerfile meegeleverd die alle benodigde modules installeert op een ubuntu-image. Deze image kan als volgt gebouwd worden
+### Docker-image bouwen
+Om de scripts systeemafhankelijk te kunnen draaien wordt een Dockerfile meegeleverd die alle benodigde modules installeert op een ubuntu-image. Dit vereist dat Docker op de betreffende machine geinstalleerd is. De image kan als volgt gebouwd worden:
 ```
-docker build . -t a2actl:latest
+sudo docker build . -t a2actl:latest
 ```
-Daarna kan een interactieve shell met deze image gestart worden:
+Daarna kan een met deze Docker-image een interactieve shell gestart worden:
 ```
-docker run -it -v $(pwd):/a2actl/ a2actl:latest
+sudo docker run -it -v $(pwd):/a2actl/ a2actl:latest
 cd /a2actl
 ```
-Het algemene gebruik voor het script is:
+### Script aanroepen
+Binnen de interactieve shell kan vervolgens het script aangeroepen worden. Het algemene gebruik daarvoor is:
 ```
-perl bsg.pl <pad naar A2A-bestand> <pad naar logbestand>
+perl <script-naam> <pad naar A2A-bestand> <pad naar logbestand>
 ```
-Bijvoorbeeld:
+In onderstaand voorbeeld wordt in een nieuwe map *log* een Excel-bestand weggeschreven voor elk XML-bestand in de map *data*, waarbij het log-bestand dezelfde naam heeft als het data-bestand, maar met de extensie *xlsx*:
 ```
 mkdir log
 for x in data/*.xml
@@ -49,17 +93,37 @@ do
   perl bsg.pl $x $log
 done
 ```
-## Parameters
+### Afsluiting
+Het script is klaar wanneer er een melding verschijnt over het aantal gecontroleerde akten. Tijdens de uitvoering van het script kunnen er ook andere console-meldingen gegenereerd worden. Deze meldingen kunnen genegeerd worden. 
+Verlaat naderhand de interactieve shell.
+```
+exit
+```
+### Gebruik zonder Docker
+Het is uiteraard ook mogelijk om de scripts zonder Docker te gebruiken op een systeem waarop Perl is geïnstalleerd. Daarvoor moeten enkele modules geïnstalleerd worden:
+```
+XML::LibXML::Reader
+XML::Bare
+Text::WagnerFischer
+Date::Calc
+Excel::Writer::XLSX
+Config::Simple
+Data::Dumper
+Getopt::Long
+File::Basename
+```
+## Nadere toelichting op het gebruik
+### Parameters
 Het script kent de aanvullende parameter "vanaf" waarmee het startjaar bepaald kan worden voor de controles. Dit komt van pas wanneer de A2A-bestanden in zijn geheel per aktesoort gepubliceerd worden en de controles alleen op de laatst toegevoegde jaren moet worden uitgevoerd, bijvoorbeeld naar aanleiding van openbaarheidsdag:
 ```
 perl bsg.pl --vanaf 1922 <pad naar A2A-bestand> <pad naar logbestand>
 ```
 De verwerking van een bestand wordt hierdoor niet sneller, alle records moeten immers gecontroleerd worden op jaartal. Het scheelt met name in de omvang van de output.
 Let op dat het script hierbij alleen records verwerkt waarvan een SourceDate/Year bekend is.
-## Aktesoorten
+### Aktesoorten
 Tijdens de uitvoering van een script wordt alleen de specifieke aktesoort behorende bij een script gecontroleerd. Dit gebeurt aan de hand van het Source/SourceDate-element. Meerdere aanroepen van verschillende scripts zijn dus nodig om alle akten te controleren in een bestand dat meerdere aktesoorten bevat. Dit komt sporadisch voor, met name rond de introductie van de Burgerlijke Stand.
-## Verwerking resultaten
-Het resultaat van een run van het script is een Excel-spreadsheet, waarmee de (mogelijke) fouten geanalyseerd kunnen worden. Het is van belang om daarbij te realiseren dat het script 'false positives' zal genereren. Er wordt alleen een vermoeden uitgesproken van een fout; of dit daadwerkelijk het geval is zal geverifieerd moeten worden. Ten behoeve daarvan worden de links naar de records meegenomen in de output.
+### Verwerking resultaten
+Het resultaat van een run van het script is een Excel-spreadsheet, waarmee de (mogelijke) fouten geanalyseerd kunnen worden. Het is van belang om daarbij te realiseren dat het script 'false positives' zal genereren. Er wordt alleen een vermoeden uitgesproken van een fout; of dit daadwerkelijk het geval is zal geverifieerd moeten worden. Ten behoeve daarvan worden de links naar de records meegenomen in de output.[^1]
 Om het aantal 'false positives' in te perken kan gebruikgemaakt worden van parameters in het configuratiebestand. Zo bepalen de parameters 'mannen' en 'vrouwen' welke namen respectievelijk niet als man of vrouw moeten worden herkend. Dit onderscheid is veelal regionaal.
 ```
 mannen=Arien,Adrien,Jurrien,Chretien,Sebastien,Esra,Cretien,Bonaventura,Josua,Jozua,Bastien,Juda,Julien,Jurien,Lucien,Martien
@@ -80,14 +144,7 @@ De volgende kolommen zijn aanwezig in de output:
 - GUID (De GUID van de akte, bijvoorbeeld om een interne link naar het CBS te kunnen maken tbv correctie)
 - Scans (Aanduiding of er scans beschikbaar zijn bij de akte, met het oog op het uitvoeren van de controle)
 
-[^1]: Vanwege een beperking op het aantal hyperlinks in Excel wordt de URL weggeschreven met een apostrof aan het begin.
-## Controles
-Controles worden uitgevoerd op:
-- structuur aktenummer
-- geldigheid van datums
-- structuur van algemene en specifieke naamdelen (voornaam, patroniem, tussenvoegsel, achternaam)
-- tekencombinaties in naamdelen
-- overeenkomsten tussen naam kind en naam ouder (moeder in geval geen vader bekend)
-- geslacht (op basis van naam)
-- gebruikte rollen
-- leeftijden
+[^1]: Vanwege een beperking op het aantal hyperlinks in Excel wordt de URL weggeschreven zonder *http* of *https* ervoor. 
+### Tips ten aanzien van het gebruik van de Excel-rapportage
+- Gebruik filters om de meldingen op *meldcode* en *melding* te filteren. Controleer vervolgens aan de hand van het veld *waarde* of het waarschijnlijk is dat het daadwerkelijke fouten betreft. 
+- Wanneer het script veel foutmeldingen genereert, prioriteer dan de meldingen die van invloed zijn op de vindbaarheid van een akte, bv. de spelling van namen.
