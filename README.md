@@ -149,6 +149,6 @@ De volgende kolommen zijn aanwezig in het Excel-bestand:
 - Wanneer het script veel foutmeldingen genereert, prioriteer dan de meldingen die van invloed zijn op de vindbaarheid van een akte, bv. de spelling van namen.
 - Gebruik de GUID om linkjes te maken naar het bewerk-scherm in het CBS, zodat fouten meteen gecorrigeerd kunnen worden.[^2]
 - Wanneer de gegevens van een gemeente per register (één of meer jaargangen) in een A2A-bestand zijn geplaatst, dan levert het script waarschijnlijk veel Excel-bestanden op met relatief weinig meldingen per bestand. Overweeg in dat geval om meerdere Excel-bestanden samen te voegen (bv. per gemeente). Plaats ze hiervoor in één map en combineer ze in een lege werkmap via Gegevens > Gegevens ophalen > Uit bestand > Uit map > Combineren en laden.
-##Noten
+## Noten
 [^1]: Vanwege een beperking op het aantal hyperlinks in Excel wordt de URL weggeschreven met een *apostrof* ervoor. Dit kan met zoeken en vervangen in URL gecorrigeerd worden.
 [^2]: Indien het CBS dit ondersteunt, zoals bv. Memorix Maior.
